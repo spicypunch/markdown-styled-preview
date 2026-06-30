@@ -112,6 +112,12 @@ Runs an Electron smoke test that generates a PDF file.
 
 ## Publishing a Release
 
+Build the macOS zip locally:
+
+```bash
+npm run dist:mac
+```
+
 Create and push a version tag:
 
 ```bash
@@ -119,7 +125,17 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-The GitHub Actions release workflow builds the macOS zip and attaches it to the GitHub Release. You can also run the release workflow manually from the Actions tab.
+Create a GitHub Release and upload the local zip:
+
+```bash
+gh release create v0.1.0 "release/Markdown Styled Preview-0.1.0-arm64-mac.zip" --title "v0.1.0" --notes "Initial macOS release."
+```
+
+To replace the file on an existing release:
+
+```bash
+gh release upload v0.1.0 "release/Markdown Styled Preview-0.1.0-arm64-mac.zip" --clobber
+```
 
 ## Tech Stack
 
@@ -256,6 +272,12 @@ Electron 환경에서 PDF 생성이 정상 동작하는지 확인합니다.
 
 ## 릴리스 배포하기
 
+로컬에서 macOS zip 파일을 빌드합니다.
+
+```bash
+npm run dist:mac
+```
+
 버전 태그를 만들고 push합니다.
 
 ```bash
@@ -263,7 +285,17 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
-GitHub Actions release workflow가 macOS zip 파일을 빌드하고 GitHub Release에 첨부합니다. Actions 탭에서 release workflow를 수동으로 실행할 수도 있습니다.
+GitHub Release를 만들고 로컬 zip 파일을 업로드합니다.
+
+```bash
+gh release create v0.1.0 "release/Markdown Styled Preview-0.1.0-arm64-mac.zip" --title "v0.1.0" --notes "Initial macOS release."
+```
+
+이미 있는 Release의 파일을 교체하려면 다음 명령을 사용합니다.
+
+```bash
+gh release upload v0.1.0 "release/Markdown Styled Preview-0.1.0-arm64-mac.zip" --clobber
+```
 
 ## 사용 기술
 
