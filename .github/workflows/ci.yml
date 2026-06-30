@@ -29,5 +29,8 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Smoke test visual layout
+        run: npm run smoke:visual
+
       - name: Smoke test PDF export
         run: npm run smoke:pdf

@@ -2,7 +2,8 @@ const { app, BrowserWindow } = require('electron')
 const fs = require('node:fs/promises')
 const path = require('node:path')
 
-const targetUrl = process.env.TARGET_URL || 'http://127.0.0.1:5173'
+const targetUrl = process.env.TARGET_URL
+const targetFile = path.join(__dirname, '../dist/index.html')
 const artifactDir = path.join(__dirname, '../.artifacts')
 const screenshotPath = path.join(artifactDir, 'preview.png')
 
@@ -22,7 +23,11 @@ app
     })
 
     await window.webContents.session.clearStorageData({ storages: ['localstorage'] })
-    await window.loadURL(targetUrl)
+    if (targetUrl) {
+      await window.loadURL(targetUrl)
+    } else {
+      await window.loadFile(targetFile)
+    }
     await new Promise((resolve) => setTimeout(resolve, 800))
 
     const initialMetrics = await window.webContents.executeJavaScript(`
@@ -135,7 +140,7 @@ app
     console.log(
       JSON.stringify(
         {
-          targetUrl,
+          target: targetUrl || targetFile,
           screenshotPath,
           initialMetrics,
           themeMetrics,
@@ -151,10 +156,9 @@ app
       process.exitCode = 1
     }
 
-    app.quit()
+    app.exit(failures.length > 0 ? 1 : 0)
   })
   .catch((error) => {
     console.error(error)
-    process.exitCode = 1
-    app.quit()
+    app.exit(1)
   })

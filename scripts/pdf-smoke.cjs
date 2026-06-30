@@ -51,6 +51,7 @@ app
     await fs.mkdir(artifactDir, { recursive: true })
     const tempDir = await fs.mkdtemp(path.join(app.getPath('temp'), 'markdown-styled-preview-pdf-'))
     const htmlPath = path.join(tempDir, 'preview.html')
+    let exitCode = 0
 
     try {
       await fs.writeFile(htmlPath, html, 'utf8')
@@ -90,20 +91,17 @@ app
         ),
       )
 
-      if (failures.length > 0) {
-        process.exitCode = 1
-      }
+      exitCode = failures.length > 0 ? 1 : 0
     } finally {
       if (!window.isDestroyed()) {
         window.destroy()
       }
 
       await fs.rm(tempDir, { recursive: true, force: true })
-      app.quit()
+      app.exit(exitCode)
     }
   })
   .catch((error) => {
     console.error(error)
-    process.exitCode = 1
-    app.quit()
+    app.exit(1)
   })
