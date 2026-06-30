@@ -1,14 +1,37 @@
 .app-shell {
   --app-bg: #191b1f;
+  --toolbar-bg: #1e2024;
   --surface: #202226;
   --surface-strong: #292c31;
   --surface-soft: #24272c;
+  --surface-hover: #2c3036;
+  --surface-hover-border: #4b515c;
   --line: #353943;
   --text: #d6d8de;
+  --heading: #f0f2f6;
   --muted: #9198a3;
   --muted-strong: #aeb4bf;
   --accent: #5daeea;
   --accent-strong: #82c8ff;
+  --active-control-text: #081018;
+  --toggle-bg: #1a1c20;
+  --pane-header-bg: #1b1d21;
+  --editor-bg: #1f2126;
+  --editor-gutter-border: #30343b;
+  --preview-bg: #202226;
+  --code-bg: #303339;
+  --code-border: #3a3e46;
+  --inline-code-bg: #2c3036;
+  --inline-code-text: #e9edf4;
+  --table-border: #3b4048;
+  --table-head-bg: #2b2f35;
+  --status-bg: #17191d;
+  --syntax-text: #c9d1d9;
+  --syntax-keyword: #ff7b72;
+  --syntax-string: #a5d6ff;
+  --syntax-title: #d2a8ff;
+  --syntax-comment: #8b949e;
+  --syntax-number: #79c0ff;
   --green: #6fc486;
 
   display: grid;
@@ -19,6 +42,42 @@
   overflow: hidden;
   background: var(--app-bg);
   color: var(--text);
+}
+
+.app-shell--light {
+  --app-bg: #eef2f7;
+  --toolbar-bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-strong: #e8edf4;
+  --surface-soft: #ffffff;
+  --surface-hover: #eef4fb;
+  --surface-hover-border: #b8c6d9;
+  --line: #d9dee7;
+  --text: #243040;
+  --heading: #111827;
+  --muted: #667085;
+  --muted-strong: #3f4a5a;
+  --accent: #2563eb;
+  --accent-strong: #1d4ed8;
+  --active-control-text: #ffffff;
+  --toggle-bg: #e8edf4;
+  --pane-header-bg: #f3f5f8;
+  --editor-bg: #f8fafc;
+  --editor-gutter-border: #d9dee7;
+  --preview-bg: #ffffff;
+  --code-bg: #f1f5f9;
+  --code-border: #d8dee8;
+  --inline-code-bg: #e9eef5;
+  --inline-code-text: #111827;
+  --table-border: #d2d8e2;
+  --table-head-bg: #f3f6fa;
+  --status-bg: #f3f5f8;
+  --syntax-text: #24292f;
+  --syntax-keyword: #cf222e;
+  --syntax-string: #0a3069;
+  --syntax-title: #8250df;
+  --syntax-comment: #6e7781;
+  --syntax-number: #0550ae;
 }
 
 .app-shell--dragging::after {
@@ -33,13 +92,13 @@
 
 .toolbar {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) auto auto;
+  grid-template-columns: minmax(240px, 1fr) auto auto auto;
   align-items: center;
   gap: 14px;
   min-height: 68px;
   padding: 10px 16px;
   border-bottom: 1px solid var(--line);
-  background: #1e2024;
+  background: var(--toolbar-bg);
 }
 
 .document-meta {
@@ -64,7 +123,7 @@
 .document-meta h1 {
   margin: 0;
   overflow: hidden;
-  color: #f0f2f6;
+  color: var(--heading);
   font-size: 15px;
   font-weight: 700;
   line-height: 1.2;
@@ -83,6 +142,7 @@
 }
 
 .toolbar-actions,
+.theme-toggle,
 .layout-toggle {
   display: flex;
   align-items: center;
@@ -106,8 +166,8 @@
 }
 
 .toolbar button:hover {
-  border-color: #4b515c;
-  background: #2c3036;
+  border-color: var(--surface-hover-border);
+  background: var(--surface-hover);
 }
 
 .toolbar button:focus-visible {
@@ -119,13 +179,15 @@
   padding: 0 12px;
 }
 
+.theme-toggle,
 .layout-toggle {
   padding: 3px;
   border: 1px solid var(--line);
   border-radius: 8px;
-  background: #1a1c20;
+  background: var(--toggle-bg);
 }
 
+.theme-toggle button,
 .layout-toggle button {
   width: 32px;
   height: 30px;
@@ -134,8 +196,9 @@
   background: transparent;
 }
 
+.theme-toggle button.active,
 .layout-toggle button.active {
-  color: #081018;
+  color: var(--active-control-text);
   background: var(--accent);
 }
 
@@ -192,7 +255,7 @@
   padding: 0 16px;
   border-bottom: 1px solid var(--line);
   color: var(--muted);
-  background: #1b1d21;
+  background: var(--pane-header-bg);
   font-size: 12px;
   font-weight: 700;
 }
@@ -214,7 +277,7 @@
   height: 100%;
   min-height: 0;
   max-height: 100%;
-  background: #1f2126;
+  background: var(--editor-bg);
   font-size: 13px;
 }
 
@@ -227,8 +290,8 @@
 }
 
 .cm-gutters {
-  background: #1f2126 !important;
-  border-right: 1px solid #30343b !important;
+  background: var(--editor-bg) !important;
+  border-right: 1px solid var(--editor-gutter-border) !important;
 }
 
 .markdown-preview {
@@ -237,8 +300,8 @@
   overflow: auto;
   overscroll-behavior: contain;
   padding: 48px 54px 72px;
-  background: #202226;
-  color: #d5d8df;
+  background: var(--preview-bg);
+  color: var(--text);
   line-height: 1.68;
 }
 
@@ -256,7 +319,7 @@
 .markdown-preview h2,
 .markdown-preview h3,
 .markdown-preview h4 {
-  color: #f0f2f6;
+  color: var(--heading);
   line-height: 1.22;
 }
 
@@ -309,9 +372,45 @@
   overflow-x: auto;
   margin: 16px 0 24px;
   padding: 18px 20px;
-  border: 1px solid #3a3e46;
+  border: 1px solid var(--code-border);
   border-radius: 0;
-  background: #303339;
+  background: var(--code-bg);
+}
+
+.markdown-preview pre code.hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0;
+  color: var(--syntax-text);
+  background: transparent;
+}
+
+.markdown-preview .hljs-keyword,
+.markdown-preview .hljs-selector-tag,
+.markdown-preview .hljs-built_in {
+  color: var(--syntax-keyword);
+}
+
+.markdown-preview .hljs-string,
+.markdown-preview .hljs-attr,
+.markdown-preview .hljs-symbol {
+  color: var(--syntax-string);
+}
+
+.markdown-preview .hljs-title,
+.markdown-preview .hljs-section,
+.markdown-preview .hljs-name {
+  color: var(--syntax-title);
+}
+
+.markdown-preview .hljs-comment,
+.markdown-preview .hljs-quote {
+  color: var(--syntax-comment);
+}
+
+.markdown-preview .hljs-number,
+.markdown-preview .hljs-literal {
+  color: var(--syntax-number);
 }
 
 .markdown-preview code {
@@ -322,8 +421,8 @@
 .markdown-preview :not(pre) > code {
   padding: 2px 6px;
   border-radius: 4px;
-  color: #e9edf4;
-  background: #2c3036;
+  color: var(--inline-code-text);
+  background: var(--inline-code-bg);
 }
 
 .markdown-preview blockquote {
@@ -343,13 +442,13 @@
 .markdown-preview th,
 .markdown-preview td {
   padding: 10px 12px;
-  border: 1px solid #3b4048;
+  border: 1px solid var(--table-border);
   text-align: left;
 }
 
 .markdown-preview th {
-  color: #f0f2f6;
-  background: #2b2f35;
+  color: var(--heading);
+  background: var(--table-head-bg);
 }
 
 .markdown-preview hr {
@@ -364,7 +463,7 @@
 }
 
 .markdown-preview strong {
-  color: #edf1f7;
+  color: var(--heading);
 }
 
 .status-bar {
@@ -376,7 +475,7 @@
   padding: 0 14px;
   border-top: 1px solid var(--line);
   color: var(--muted);
-  background: #17191d;
+  background: var(--status-bg);
   font-size: 12px;
 }
 
@@ -401,6 +500,7 @@
     flex: 0 0 auto;
   }
 
+  .theme-toggle,
   .layout-toggle {
     width: max-content;
   }

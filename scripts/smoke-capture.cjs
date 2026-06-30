@@ -21,6 +21,7 @@ app
       },
     })
 
+    await window.webContents.session.clearStorageData({ storages: ['localstorage'] })
     await window.loadURL(targetUrl)
     await new Promise((resolve) => setTimeout(resolve, 800))
 
@@ -47,10 +48,31 @@ app
       })()
     `)
 
+    await window.webContents.executeJavaScript(`
+      (() => {
+        document.querySelector('[data-theme-option="light"]')?.click()
+      })()
+    `)
+    await new Promise((resolve) => setTimeout(resolve, 300))
+
+    const themeMetrics = await window.webContents.executeJavaScript(`
+      (() => {
+        const appShell = document.querySelector('.app-shell')
+        const previewArticle = document.querySelector('.markdown-preview')
+        const previewStyles = previewArticle ? window.getComputedStyle(previewArticle) : null
+
+        return {
+          lightThemeActive: appShell?.classList.contains('app-shell--light') ?? false,
+          previewBackground: previewStyles?.backgroundColor ?? '',
+          themeButtons: document.querySelectorAll('.theme-toggle button').length,
+        }
+      })()
+    `)
+
     const longMarkdown = Array.from(
       { length: 120 },
-      (_, index) => `## Scroll section ${index + 1}\\n\\n- Long preview line ${index + 1}\\n`,
-    ).join('\\n')
+      (_, index) => `## Scroll section ${index + 1}\n\n- Long preview line ${index + 1}\n`,
+    ).join('\n')
 
     await window.webContents.executeJavaScript(`
       (() => {
@@ -93,9 +115,14 @@ app
     if (!initialMetrics.hasWorkspace) failures.push('missing workspace')
     if (initialMetrics.editorWidth < 320) failures.push('editor pane too narrow')
     if (initialMetrics.previewWidth < 320) failures.push('preview pane too narrow')
-    if (initialMetrics.toolbarButtons < 7) failures.push('toolbar controls missing')
+    if (initialMetrics.toolbarButtons < 10) failures.push('toolbar controls missing')
     if (initialMetrics.previewTextLength !== 0) failures.push('initial preview is not blank')
     if (initialMetrics.horizontalOverflow) failures.push('document overflows horizontally')
+    if (!themeMetrics.lightThemeActive) failures.push('light theme did not activate')
+    if (themeMetrics.themeButtons !== 2) failures.push('theme toggle controls missing')
+    if (!themeMetrics.previewBackground.includes('255')) {
+      failures.push('light theme preview background was not applied')
+    }
     if (scrollMetrics.editorScrollHeight <= scrollMetrics.editorClientHeight) {
       failures.push('editor does not have a scrollable area')
     }
@@ -111,6 +138,7 @@ app
           targetUrl,
           screenshotPath,
           initialMetrics,
+          themeMetrics,
           scrollMetrics,
           failures,
         },

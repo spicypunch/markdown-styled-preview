@@ -1,9 +1,18 @@
 {
   "name": "markdown-styled-preview",
-  "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "productName": "Markdown Styled Preview",
   "description": "Desktop Markdown editor with a live styled preview panel.",
+  "license": "MIT",
+  "author": "spicypunch",
+  "homepage": "https://github.com/spicypunch/markdown-styled-preview#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spicypunch/markdown-styled-preview.git"
+  },
+  "bugs": {
+    "url": "https://github.com/spicypunch/markdown-styled-preview/issues"
+  },
   "main": "electron/main.cjs",
   "type": "module",
   "scripts": {
@@ -12,6 +21,7 @@
     "electron:dev": "concurrently -k \"npm run dev\" \"wait-on http://127.0.0.1:5173 && VITE_DEV_SERVER_URL=http://127.0.0.1:5173 electron .\"",
     "build": "tsc -b && vite build",
     "desktop:build": "npm run build",
+    "dist:mac": "npm run build && electron-builder --mac zip --publish never",
     "package:mac": "npm run build && electron-builder --mac dir --publish never && npm run sign:mac",
     "sign:mac": "codesign --force --deep --sign - \"release/mac-arm64/Markdown Styled Preview.app\"",
     "lint": "eslint .",

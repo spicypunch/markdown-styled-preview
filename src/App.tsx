@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { DragEvent } from 'react'
 import CodeMirror from '@uiw/react-codemirror'
 import { markdown as markdownLanguage } from '@codemirror/lang-markdown'
@@ -14,13 +14,49 @@ import {
   FileDown,
   FileText,
   FileUp,
+  Moon,
   PanelLeft,
   Save,
+  Sun,
 } from 'lucide-react'
 import 'highlight.js/styles/github-dark.css'
 import './App.css'
 
 type LayoutMode = 'split' | 'editor' | 'preview'
+type ThemeMode = 'dark' | 'light'
+
+const themeStorageKey = 'markdown-styled-preview-theme'
+
+const lightEditorTheme = EditorView.theme(
+  {
+    '&': {
+      backgroundColor: '#f8fafc',
+      color: '#1f2937',
+    },
+    '.cm-content': {
+      caretColor: '#2563eb',
+    },
+    '&.cm-focused .cm-cursor': {
+      borderLeftColor: '#2563eb',
+    },
+    '&.cm-focused .cm-selectionBackground, .cm-selectionBackground, .cm-content ::selection': {
+      backgroundColor: '#cfe5ff',
+    },
+    '.cm-activeLine': {
+      backgroundColor: '#edf4ff',
+    },
+    '.cm-activeLineGutter': {
+      backgroundColor: '#e6eef9',
+      color: '#1f2937',
+    },
+    '.cm-gutters': {
+      backgroundColor: '#f2f5f9',
+      borderRight: '1px solid #d9dee7',
+      color: '#6b7280',
+    },
+  },
+  { dark: false },
+)
 
 function App() {
   const [markdown, setMarkdown] = useState('')
@@ -28,6 +64,7 @@ function App() {
   const [filePath, setFilePath] = useState<string | null>(null)
   const [isDirty, setIsDirty] = useState(false)
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('split')
+  const [themeMode, setThemeMode] = useState<ThemeMode>(getInitialTheme)
   const [isDragging, setIsDragging] = useState(false)
   const [status, setStatus] = useState('Ready')
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -40,6 +77,14 @@ function App() {
 
   const desktopApi = window.desktopApi
   const documentState = isDirty ? 'Unsaved' : 'Saved'
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(themeStorageKey, themeMode)
+    } catch {
+      // Local storage can be unavailable in restricted browser contexts.
+    }
+  }, [themeMode])
 
   const setDocument = useCallback((content: string, name: string, path?: string | null) => {
     setMarkdown(content)
@@ -117,7 +162,7 @@ function App() {
   const handleExportHtml = async () => {
     const previewHtml = previewRef.current?.innerHTML ?? ''
     const htmlName = getExportFileName(fileName, 'html')
-    const fullHtml = buildExportHtml(fileName, previewHtml)
+    const fullHtml = buildExportHtml(fileName, previewHtml, themeMode)
 
     if (desktopApi) {
       const result = await desktopApi.exportHtml({
@@ -139,7 +184,7 @@ function App() {
   const handleExportPdf = async () => {
     const previewHtml = previewRef.current?.innerHTML ?? ''
     const pdfName = getExportFileName(fileName, 'pdf')
-    const fullHtml = buildExportHtml(fileName, previewHtml)
+    const fullHtml = buildExportHtml(fileName, previewHtml, themeMode)
 
     if (desktopApi) {
       const result = await desktopApi.exportPdf({
@@ -184,10 +229,17 @@ function App() {
   }
 
   const layoutClass = `workspace workspace--${layoutMode}`
+  const appClassName = [
+    'app-shell',
+    `app-shell--${themeMode}`,
+    isDragging ? 'app-shell--dragging' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
     <main
-      className={`app-shell${isDragging ? ' app-shell--dragging' : ''}`}
+      className={appClassName}
       onDragOver={(event) => {
         event.preventDefault()
         setIsDragging(true)
@@ -226,6 +278,27 @@ function App() {
           <button type="button" onClick={handleExportPdf} title="Export PDF">
             <FileDown size={16} />
             <span>PDF</span>
+          </button>
+        </div>
+
+        <div className="theme-toggle" aria-label="Theme">
+          <button
+            type="button"
+            className={themeMode === 'light' ? 'active' : ''}
+            data-theme-option="light"
+            onClick={() => setThemeMode('light')}
+            title="Light theme"
+          >
+            <Sun size={16} />
+          </button>
+          <button
+            type="button"
+            className={themeMode === 'dark' ? 'active' : ''}
+            data-theme-option="dark"
+            onClick={() => setThemeMode('dark')}
+            title="Dark theme"
+          >
+            <Moon size={16} />
           </button>
         </div>
 
@@ -280,7 +353,7 @@ function App() {
           <CodeMirror
             value={markdown}
             height="100%"
-            theme={oneDark}
+            theme={themeMode === 'dark' ? oneDark : lightEditorTheme}
             extensions={editorExtensions}
             basicSetup={{
               bracketMatching: true,
@@ -326,16 +399,24 @@ function downloadText(fileName: string, content: string, type: string) {
   URL.revokeObjectURL(url)
 }
 
-function buildExportHtml(title: string, previewHtml: string) {
+function getInitialTheme(): ThemeMode {
+  try {
+    return window.localStorage.getItem(themeStorageKey) === 'light' ? 'light' : 'dark'
+  } catch {
+    return 'dark'
+  }
+}
+
+function buildExportHtml(title: string, previewHtml: string, themeMode: ThemeMode) {
   return `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>${escapeHtml(title)}</title>
-  <style>${exportStyles}</style>
+  <style>${getExportStyles(themeMode)}</style>
 </head>
-<body>
+<body data-theme="${themeMode}">
   <main class="markdown-preview">${previewHtml}</main>
 </body>
 </html>`
@@ -355,19 +436,65 @@ function escapeHtml(value: string) {
     .replaceAll('"', '&quot;')
 }
 
-const exportStyles = `
+type ExportColors = {
+  accent: string
+  background: string
+  blockquote: string
+  codeBackground: string
+  codeBorder: string
+  heading: string
+  inlineCodeBackground: string
+  inlineCodeText: string
+  tableBorder: string
+  tableHeadBackground: string
+  text: string
+}
+
+const exportColorThemes: Record<ThemeMode, ExportColors> = {
+  dark: {
+    accent: '#5daeea',
+    background: '#1d1f23',
+    blockquote: '#aeb4bf',
+    codeBackground: '#303339',
+    codeBorder: '#3a3e46',
+    heading: '#f0f2f6',
+    inlineCodeBackground: '#2c3036',
+    inlineCodeText: '#e9edf4',
+    tableBorder: '#3b4048',
+    tableHeadBackground: '#2b2f35',
+    text: '#d5d8df',
+  },
+  light: {
+    accent: '#2563eb',
+    background: '#ffffff',
+    blockquote: '#526070',
+    codeBackground: '#f1f5f9',
+    codeBorder: '#d8dee8',
+    heading: '#111827',
+    inlineCodeBackground: '#e9eef5',
+    inlineCodeText: '#111827',
+    tableBorder: '#d2d8e2',
+    tableHeadBackground: '#f3f6fa',
+    text: '#243040',
+  },
+}
+
+function getExportStyles(themeMode: ThemeMode) {
+  const colors = exportColorThemes[themeMode]
+
+  return `
 @page {
   size: A4;
   margin: 18mm;
 }
 :root {
-  color: #d5d8df;
-  background: #1d1f23;
+  color: ${colors.text};
+  background: ${colors.background};
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 body {
   margin: 0;
-  background: #1d1f23;
+  background: ${colors.background};
 }
 .markdown-preview {
   box-sizing: border-box;
@@ -375,13 +502,13 @@ body {
   min-height: 100%;
   margin: 0 auto;
   padding: 56px 40px 72px;
-  color: #d5d8df;
+  color: ${colors.text};
   line-height: 1.68;
 }
 .markdown-preview h1,
 .markdown-preview h2,
 .markdown-preview h3 {
-  color: #f0f2f6;
+  color: ${colors.heading};
   line-height: 1.22;
 }
 .markdown-preview h1 {
@@ -408,7 +535,8 @@ body {
   overflow-x: auto;
   margin: 16px 0 24px;
   padding: 18px 20px;
-  background: #303339;
+  border: 1px solid ${colors.codeBorder};
+  background: ${colors.codeBackground};
 }
 .markdown-preview code {
   font-family: "SFMono-Regular", Menlo, Consolas, monospace;
@@ -417,13 +545,14 @@ body {
 .markdown-preview :not(pre) > code {
   padding: 2px 6px;
   border-radius: 4px;
-  background: #2c3036;
+  color: ${colors.inlineCodeText};
+  background: ${colors.inlineCodeBackground};
 }
 .markdown-preview blockquote {
   margin: 24px 0;
   padding-left: 18px;
-  border-left: 3px solid #5daeea;
-  color: #aeb4bf;
+  border-left: 3px solid ${colors.accent};
+  color: ${colors.blockquote};
 }
 .markdown-preview table {
   width: 100%;
@@ -433,14 +562,15 @@ body {
 .markdown-preview th,
 .markdown-preview td {
   padding: 10px 12px;
-  border: 1px solid #3b4048;
+  border: 1px solid ${colors.tableBorder};
 }
 .markdown-preview th {
-  background: #2b2f35;
+  color: ${colors.heading};
+  background: ${colors.tableHeadBackground};
 }
 @media print {
   body {
-    background: #1d1f23;
+    background: ${colors.background};
   }
   .markdown-preview {
     max-width: none;
@@ -448,5 +578,6 @@ body {
   }
 }
 `
+}
 
 export default App
