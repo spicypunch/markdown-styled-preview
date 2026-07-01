@@ -486,15 +486,20 @@ function getExportStyles(themeMode: ThemeMode) {
 @page {
   size: A4;
   margin: 18mm;
+  background: ${colors.background};
 }
 :root {
   color: ${colors.text};
   background: ${colors.background};
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
+html,
 body {
   margin: 0;
+  min-height: 100%;
   background: ${colors.background};
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 .markdown-preview {
   box-sizing: border-box;
@@ -502,6 +507,7 @@ body {
   min-height: 100%;
   margin: 0 auto;
   padding: 56px 40px 72px;
+  background: ${colors.background};
   color: ${colors.text};
   line-height: 1.68;
 }
@@ -569,7 +575,9 @@ body {
   background: ${colors.tableHeadBackground};
 }
 @media print {
+  html,
   body {
+    min-height: 100%;
     background: ${colors.background};
   }
   .markdown-preview {

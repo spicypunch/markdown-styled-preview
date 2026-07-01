@@ -120,11 +120,12 @@ ipcMain.handle('markdown:exportPdf', async (_event, payload) => {
 
   const tempDir = await fs.mkdtemp(path.join(app.getPath('temp'), 'markdown-styled-preview-'))
   const tempHtmlPath = path.join(tempDir, 'preview.html')
+  const backgroundColor = getExportBackgroundColor(payload.html)
   const pdfWindow = new BrowserWindow({
     width: 1000,
     height: 1400,
     show: false,
-    backgroundColor: '#1d1f23',
+    backgroundColor,
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,
@@ -203,4 +204,8 @@ async function waitForFonts(window) {
     )
     .catch(() => true)
   await new Promise((resolve) => setTimeout(resolve, 250))
+}
+
+function getExportBackgroundColor(html) {
+  return /<body\b[^>]*\bdata-theme=["']light["']/i.test(html) ? '#ffffff' : '#1d1f23'
 }
